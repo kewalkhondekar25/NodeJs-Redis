@@ -1,5 +1,6 @@
 import axios from "axios";
 import express from "express";
+import { client } from "./redis/client";
 
 const app = express();
 const port = 8080;
@@ -12,7 +13,13 @@ app.get("/", (req, res) => {
 
 app.get("/meals", async (req, res) => {
   try {
+    const cacheVal = await client.get("meals");
+    if(cacheVal){
+      return res.status(200).json({data: JSON.parse(cacheVal)})
+    } 
     const {data} = await axios.get("https://vegan-meals-api.vercel.app/api/v1/meals");
+    await client.set("meals", JSON.stringify(data));
+    await client.expire("meals", 10);
     return res.status(200).json({
       data: data
     })
