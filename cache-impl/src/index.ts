@@ -18,13 +18,16 @@ app.get("/meals", async (req, res) => {
       return res.status(200).json({data: JSON.parse(cacheVal)})
     } 
     const {data} = await axios.get("https://vegan-meals-api.vercel.app/api/v1/meals");
+
     await client.set("meals", JSON.stringify(data));
-    await client.expire("meals", 10);
+    await client.expire("meals", 30);
+
     return res.status(200).json({
       data: data
     })
   } catch (error) {
     console.log(error.message);
+
     return res.status(500).json({
       message: error.message
     })
